@@ -6,10 +6,27 @@ import { site } from '../../site.config.js';
 <Layout title={site.seo.defaultTitle} description={site.seo.defaultDescription}>
 
   <!-- HERO SECTION -->
-  <section
-    class="relative h-screen min-h-[600px] flex items-center"
-    style="background-image: url('/images/synchron-logistics-supply-chain-excellence.jpg'); background-size: cover; background-position: center;"
-  >
+  <section class="relative h-screen min-h-[600px] flex items-center overflow-hidden">
+    <!-- Background image (fallback / first paint) -->
+    <img
+      src="/images/synchron-logistics-supply-chain-excellence.jpg"
+      alt=""
+      class="absolute inset-0 w-full h-full object-cover"
+      aria-hidden="true"
+    />
+
+    <!-- Background video (gated playback, fades in over image) -->
+    <video
+      class="hero-video absolute inset-0 w-full h-full object-cover"
+      muted
+      loop
+      playsinline
+      preload="none"
+      aria-hidden="true"
+    >
+      <source src="/images/synchron-logistics-hero-loop.mp4" type="video/mp4" />
+    </video>
+
     <!-- Gradient overlay -->
     <div class="absolute inset-0" style="background: linear-gradient(to right, rgba(10,10,10,0.88) 0%, rgba(10,10,10,0.65) 50%, rgba(10,10,10,0.15) 100%);"></div>
 
@@ -24,11 +41,14 @@ import { site } from '../../site.config.js';
         <h1 class="font-heading font-bold uppercase leading-none mb-4">
           <span
             class="block text-6xl md:text-8xl lg:text-9xl hero-line-1"
-            style="color: transparent; -webkit-text-stroke: 2px rgba(255,255,255,0.75);"
+            style="color: transparent; -webkit-text-stroke: 2px rgba(255,255,255,0.75); text-shadow: 0 2px 24px rgba(0,0,0,0.6), 0 4px 60px rgba(0,0,0,0.4);"
           >
             SUPPLY CHAIN
           </span>
-          <span class="block text-6xl md:text-8xl lg:text-9xl text-white hero-line-2">
+          <span
+            class="block text-6xl md:text-8xl lg:text-9xl text-white hero-line-2"
+            style="text-shadow: 0 2px 24px rgba(0,0,0,0.6), 0 4px 60px rgba(0,0,0,0.4);"
+          >
             EXCELLENCE.
           </span>
         </h1>
@@ -288,6 +308,17 @@ import { site } from '../../site.config.js';
 
 <style>
   /* =============================================
+     HERO — BACKGROUND VIDEO FADE-IN
+  ============================================= */
+  .hero-video {
+    opacity: 0;
+    transition: opacity 0.8s ease;
+  }
+  .hero-video.is-ready {
+    opacity: 1;
+  }
+
+  /* =============================================
      HERO — PAGE LOAD STAGGER + FLOAT
   ============================================= */
   @media (prefers-reduced-motion: no-preference) {
@@ -400,3 +431,17 @@ import { site } from '../../site.config.js';
     }
   }
 </style>
+
+<script>
+  // Hero background video — only play on desktop when motion is allowed
+  const v = document.querySelector('.hero-video');
+  if (v) {
+    const reduce  = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const desktop = matchMedia('(min-width: 768px)').matches;
+    if (!reduce && desktop) {
+      v.preload = 'auto';
+      v.addEventListener('canplay', () => v.classList.add('is-ready'), { once: true });
+      v.play().catch(() => {});
+    }
+  }
+</script>

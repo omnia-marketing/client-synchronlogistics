@@ -134,6 +134,57 @@ Hero content uses CSS animation classes defined in `index.astro`:
 - `.hero-buttons` — 0.7s delay
 - `.hero-float` — infinite subtle float after 1.5s
 
+### Hero Background Video (gated playback)
+
+**Reusable pattern.** Autoplay background video that costs mobile and reduced-motion users nothing — they only ever see the fallback image.
+
+Markup — fallback `<img>` first (handles first paint), `<video>` second, both decorative:
+
+```html
+<img
+  src="/images/hero-poster.jpg"
+  alt=""
+  class="absolute inset-0 w-full h-full object-cover"
+  aria-hidden="true"
+/>
+<video
+  class="hero-video absolute inset-0 w-full h-full object-cover"
+  muted loop playsinline preload="none" aria-hidden="true"
+>
+  <source src="/images/hero-loop.mp4" type="video/mp4" />
+</video>
+```
+
+Page `<style>` — video starts invisible, fades in over the image when ready:
+
+```css
+.hero-video { opacity: 0; transition: opacity 0.8s ease; }
+.hero-video.is-ready { opacity: 1; }
+```
+
+Page `<script>` — playback is JS-gated; the video never downloads unless both checks pass:
+
+```js
+const v = document.querySelector('.hero-video');
+if (v) {
+  const reduce  = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const desktop = matchMedia('(min-width: 768px)').matches;
+  if (!reduce && desktop) {
+    v.preload = 'auto';
+    v.addEventListener('canplay', () => v.classList.add('is-ready'), { once: true });
+    v.play().catch(() => {});
+  }
+}
+```
+
+Rules:
+- `preload="none"` on the video — combined with the JS gate, mobile and reduced-motion users never download it
+- Play only when viewport is `min-width: 768px` **and** `prefers-reduced-motion` is not set
+- Fade in via `.is-ready` on `canplay` — never show a black/loading video frame
+- Both layers get `aria-hidden="true"` and empty/no `alt` — purely decorative
+- Overlay and content stay above the video via DOM order (overlay `<div>` after the video)
+- Text over video usually needs a layered `text-shadow` for legibility — soft, low-opacity layers read better than one heavy shadow (see hero headline in `index.astro`)
+
 ### Counter Animation
 
 Stats section uses `data-counter` and `data-target` attributes.

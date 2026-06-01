@@ -27,7 +27,7 @@ Build status for the Synchron Logistics website.
 - [x] `Footer.astro` — 4-column layout. Credentials line (IATA/FMC). Null-safe for missing phone/address.
 
 ### Pages
-- [x] `index.astro` — Hero ("Supply Chain Excellence", white-stroke outline headline, background image from /public/images/), Asia Pacific differentiator strip — 3-column layout (headline left, two stats side-by-side right; stacks to left-aligned column on mobile), Origin/Mission section, Services (3 cards — Unsplash placeholders), Stats bar (2015 static / 1,000+ / 10 / 24/7), Red CTA
+- [x] `index.astro` — Hero ("Supply Chain Excellence", white-stroke outline headline, background video `synchron-logistics-hero-loop.mp4` with jpg poster/fallback, gated playback), Asia Pacific differentiator strip — 3-column layout (headline left, two stats side-by-side right; stacks to left-aligned column on mobile), Origin/Mission section, Services (3 cards — Unsplash placeholders), Stats bar (2015 static / 1,000+ / 10 / 24/7), Red CTA
 - [x] `about.astro` — Page header (IATA/FMC in intro), Origin story, Vision + Mission, Compliance section, Accreditations section
 - [x] `services.astro` — Page header, 4-group alternating split layout (image + content, full-bleed), real client images wired, Industries We Serve grid (10 industries, 5-col), CTA
 - [x] `contact.astro` — Contact info (null-safe), Quote form with inquiry type dropdown (email routing comments in place)
@@ -36,7 +36,8 @@ Build status for the Synchron Logistics website.
 
 ### Images
 - [x] `/public/images/` directory created
-- [x] `synchron-logistics-supply-chain-excellence.jpg` — hero background image
+- [x] `synchron-logistics-supply-chain-excellence.jpg` — hero poster/fallback image
+- [x] `synchron-logistics-hero-loop.mp4` — hero background video loop
 - [x] `synchron-logistics-domestic-freight.jpg` — wired to Group 01
 - [x] `synchron-logistics-international-freight.jpg` — wired to Group 02
 - [x] `synchron-logistics-warehouse-distribution.jpg` — wired to Group 03
@@ -45,6 +46,7 @@ Build status for the Synchron Logistics website.
 ### Animations
 - [x] Hero page-load stagger (fade-slide-up, CSS keyframes, 5-element stagger)
 - [x] Hero infinite float
+- [x] Hero background video — gated playback (desktop ≥768px + motion-allowed only, `preload="none"`, fade-in on `canplay`)
 - [x] Scroll reveal (`.reveal` class, IntersectionObserver, respects `prefers-reduced-motion`)
 - [x] Counter animation — `1000` and `10` only; `2015` and `24/7` are static
 - [x] Nav scroll shadow

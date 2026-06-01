@@ -80,7 +80,7 @@ Controlled via `modules` export in `site.config.js`:
 - All business details in `site.config.js` — no hardcoded strings in components
 - Services page: full alternating split layout with 4 real client images
 - Contact form: UI complete with inquiry type dropdown; Resend backend not yet built
-- Hero: "SUPPLY CHAIN EXCELLENCE." headline, background image from `/public/images/`, CTA "EXPLORE SERVICES"
+- Hero: "SUPPLY CHAIN EXCELLENCE." headline, background video (`synchron-logistics-hero-loop.mp4`) with jpg poster/fallback image, gated playback (desktop + motion-allowed only), headline text-shadow for legibility, CTA "EXPLORE SERVICES"
 - Gateway section: 3-column layout (headline left, two stats right); mobile-friendly side-by-side stats, left-aligned stack
 - Homepage services cards: still using Unsplash placeholder images — client assets needed
 - Missing from client: phone, street address, postal code, social URLs, carrier apply link, tracking portal URL

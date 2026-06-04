@@ -75,7 +75,7 @@ Build status for the Synchron Logistics website.
 
 ## In Progress
 
-- [ ] **Placeholder contact details** — phone and street address MISSING. Marked with TODO in site.config.js. City/province (Kelowna, BC) confirmed.
+- [ ] **Placeholder contact details** — phone and street address MISSING. Marked with TODO in site.config.js. City/province (Vancouver, BC) confirmed.
 - [ ] **Social media URLs** — all `#` in site.config.js. Client has not provided.
 - [ ] **Carrier application link** — `/carriers` CTA points to `#`. Needs client-provided URL or form spec.
 - [ ] **Tracking portal URL** — Synch101 app status and portal URL not yet confirmed.

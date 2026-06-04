@@ -19,7 +19,7 @@ When making architectural decisions, consider both purposes. Patterns introduced
 ## Client
 
 - **Business:** Synchron Logistics
-- **Location:** Kelowna, BC, Canada
+- **Location:** Vancouver, BC, Canada
 - **Industry:** Logistics / Transportation
 - **CMS:** None — fully static site
 

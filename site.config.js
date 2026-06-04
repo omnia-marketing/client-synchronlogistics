@@ -31,7 +31,7 @@ export const site = {
   // TODO: address — MISSING, client has not provided street/postal
   address: {
     street: null,       // TODO: MISSING — confirm with client
-    city: 'Kelowna',
+    city: 'Vancouver',
     province: 'BC',
     postal: null,       // TODO: MISSING — confirm with client
     country: 'Canada',
@@ -61,7 +61,7 @@ export const site = {
     defaultTitle: 'Synchron Logistics — Global Freight & Supply Chain Solutions',
     titleSuffix: ' — Synchron Logistics',
     defaultDescription:
-      'Synchron Logistics offers international freight forwarding, road transportation, warehousing, and supply chain solutions from Kelowna, BC — gateway to Asia Pacific.',
+      'Synchron Logistics offers international freight forwarding, road transportation, warehousing, and supply chain solutions from Vancouver, BC — gateway to Asia Pacific.',
   },
 
   // ─── Navigation ───────────────────────────────────────────────────────────
@@ -81,7 +81,7 @@ export const site = {
   // ─── Footer ───────────────────────────────────────────────────────────────
   footer: {
     tagline:
-      'Full-service freight forwarding, inland distribution, and supply chain logistics support. Founded 2015, Kelowna, BC.',
+      'Full-service freight forwarding, inland distribution, and supply chain logistics support. Founded 2015, Vancouver, BC.',
     navLinks: [
       { label: 'Home',           href: '/' },
       { label: 'About Us',       href: '/about' },

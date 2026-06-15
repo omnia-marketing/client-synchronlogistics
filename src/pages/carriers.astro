@@ -24,6 +24,15 @@ const { emails } = site;
       <p class="font-body text-white/80 text-lg max-w-xl leading-relaxed">
         Without our carriers, we don't exist. We treat every carrier with the same respect we give our customers.
       </p>
+      <a
+        href="#carrier-application"
+        class="mt-8 inline-flex items-center gap-3 font-heading font-bold uppercase tracking-widest text-sm px-8 py-4 bg-[#e31937] text-white hover:bg-[#c41530] hover:scale-[1.02] transition-all duration-200"
+      >
+        START YOUR APPLICATION
+        <svg class="hero-scroll-arrow w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
+        </svg>
+      </a>
     </div>
   </section>
 
@@ -167,14 +176,213 @@ const { emails } = site;
         <h2 class="font-heading font-bold uppercase text-4xl md:text-5xl text-white leading-tight">READY TO PARTNER?</h2>
         <p class="font-body text-white/80 text-base mt-2">Join our network of 1,000+ trusted carriers.</p>
       </div>
-      <!-- TODO: Replace '#' with carrier application link or form URL once client provides it -->
       <a
-        href="#"
+        href="#carrier-application"
         class="font-heading font-bold uppercase tracking-widest text-sm px-10 py-4 border-2 border-white text-white hover:bg-white hover:text-[#e31937] transition-all duration-200 flex-shrink-0"
       >
         APPLY TO BECOME A CARRIER
       </a>
     </div>
   </section>
+
+  <!-- CARRIER APPLICATION FORM -->
+  <section id="carrier-application" class="bg-[#f5f5f5] py-24">
+    <div class="max-w-3xl mx-auto px-6">
+      <div class="mb-10">
+        <p class="font-heading font-bold text-sm tracking-widest uppercase text-[#e31937] mb-4">CARRIER APPLICATION</p>
+        <h2 class="font-heading font-bold uppercase text-5xl md:text-6xl text-[#0a0a0a] leading-tight mb-4">
+          APPLY TO<br />PARTNER
+        </h2>
+        <p class="font-body text-gray-500 text-base leading-relaxed">
+          Complete the form below and our team will review your details and reach out. Fields marked <span class="text-[#e31937]">*</span> are required.
+        </p>
+      </div>
+
+      <div class="bg-white p-8 md:p-10">
+        <form id="carrier-form" novalidate class="flex flex-col gap-5">
+          <!-- Honeypot: hidden from humans, baits bots. Submissions with this filled are silently dropped server-side. -->
+          <div class="absolute -left-[9999px] w-px h-px overflow-hidden" aria-hidden="true">
+            <label>Company Website</label>
+            <input type="text" name="company_website" tabindex="-1" autocomplete="off" />
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div>
+              <label class="font-body text-xs uppercase tracking-widest text-gray-500 mb-2 block">First Name <span class="text-[#e31937]">*</span></label>
+              <input type="text" name="firstName" required class="w-full border border-gray-200 px-4 py-3 font-body text-sm focus:outline-none focus:border-[#e31937] transition-colors" placeholder="John" />
+              <p class="hidden font-body text-xs text-[#e31937] mt-1" data-error-for="firstName"></p>
+            </div>
+            <div>
+              <label class="font-body text-xs uppercase tracking-widest text-gray-500 mb-2 block">Last Name <span class="text-[#e31937]">*</span></label>
+              <input type="text" name="lastName" required class="w-full border border-gray-200 px-4 py-3 font-body text-sm focus:outline-none focus:border-[#e31937] transition-colors" placeholder="Smith" />
+              <p class="hidden font-body text-xs text-[#e31937] mt-1" data-error-for="lastName"></p>
+            </div>
+          </div>
+          <div>
+            <label class="font-body text-xs uppercase tracking-widest text-gray-500 mb-2 block">Address <span class="text-[#e31937]">*</span></label>
+            <input type="text" name="address" required class="w-full border border-gray-200 px-4 py-3 font-body text-sm focus:outline-none focus:border-[#e31937] transition-colors" placeholder="Street, City, Province, Postal" />
+            <p class="hidden font-body text-xs text-[#e31937] mt-1" data-error-for="address"></p>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div>
+              <label class="font-body text-xs uppercase tracking-widest text-gray-500 mb-2 block">Email <span class="text-[#e31937]">*</span></label>
+              <input type="email" name="email" required class="w-full border border-gray-200 px-4 py-3 font-body text-sm focus:outline-none focus:border-[#e31937] transition-colors" placeholder="john@carrier.com" />
+              <p class="hidden font-body text-xs text-[#e31937] mt-1" data-error-for="email"></p>
+            </div>
+            <div>
+              <label class="font-body text-xs uppercase tracking-widest text-gray-500 mb-2 block">Contact Number <span class="text-gray-400 normal-case tracking-normal">(optional)</span></label>
+              <input type="tel" name="contactNumber" class="w-full border border-gray-200 px-4 py-3 font-body text-sm focus:outline-none focus:border-[#e31937] transition-colors" placeholder="(604) 555-0123" />
+              <p class="hidden font-body text-xs text-[#e31937] mt-1" data-error-for="contactNumber"></p>
+            </div>
+          </div>
+          <div>
+            <label class="font-body text-xs uppercase tracking-widest text-gray-500 mb-2 block">Driver's License # <span class="text-[#e31937]">*</span></label>
+            <input type="text" name="driverLicense" required class="w-full border border-gray-200 px-4 py-3 font-body text-sm focus:outline-none focus:border-[#e31937] transition-colors" placeholder="License number" />
+            <p class="hidden font-body text-xs text-[#e31937] mt-1" data-error-for="driverLicense"></p>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div>
+              <label class="font-body text-xs uppercase tracking-widest text-gray-500 mb-2 block">Carrier ID Type <span class="text-[#e31937]">*</span></label>
+              <select name="idType" required class="w-full border border-gray-200 px-4 py-3 font-body text-sm focus:outline-none focus:border-[#e31937] transition-colors bg-white text-gray-700">
+                <option value="">Select type</option>
+                <option value="mc">MC</option>
+                <option value="dot">DOT</option>
+                <option value="other">Other</option>
+              </select>
+              <p class="hidden font-body text-xs text-[#e31937] mt-1" data-error-for="idType"></p>
+            </div>
+            <div>
+              <label class="font-body text-xs uppercase tracking-widest text-gray-500 mb-2 block">Carrier ID Number <span class="text-[#e31937]">*</span></label>
+              <input type="text" name="idNumber" required class="w-full border border-gray-200 px-4 py-3 font-body text-sm focus:outline-none focus:border-[#e31937] transition-colors" placeholder="Select a type first" data-id-number />
+              <p class="hidden font-body text-xs text-[#e31937] mt-1" data-error-for="idNumber"></p>
+            </div>
+          </div>
+          <button type="submit" data-submit class="bg-[#e31937] text-white font-heading font-bold uppercase tracking-widest text-sm px-8 py-4 hover:bg-[#c41530] transition-colors self-start disabled:opacity-60 disabled:cursor-not-allowed">
+            SUBMIT APPLICATION
+          </button>
+          <p class="hidden font-body text-sm" data-form-status role="status" aria-live="polite"></p>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <style>
+    /* Gentle down-bounce hinting the hero CTA scrolls to the form below. */
+    @media (prefers-reduced-motion: no-preference) {
+      @keyframes scrollArrowBounce {
+        0%, 100% { transform: translateY(0); }
+        50%      { transform: translateY(4px); }
+      }
+      .hero-scroll-arrow {
+        animation: scrollArrowBounce 1.6s ease-in-out infinite;
+      }
+    }
+  </style>
+
+  <script>
+    const form = document.getElementById('carrier-form') as HTMLFormElement | null;
+    if (form) {
+      const statusEl = form.querySelector('[data-form-status]') as HTMLElement;
+      const button = form.querySelector('[data-submit]') as HTMLButtonElement;
+      const errorEls = form.querySelectorAll<HTMLElement>('[data-error-for]');
+      const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      const MC_RE = /^\d{6}$/;
+      const DOT_RE = /^\d{9}$/;
+
+      function clearErrors() {
+        errorEls.forEach((el) => { el.textContent = ''; el.classList.add('hidden'); });
+      }
+
+      function showFieldError(name: string, msg: string) {
+        const el = form!.querySelector<HTMLElement>(`[data-error-for="${name}"]`);
+        if (el) { el.textContent = msg; el.classList.remove('hidden'); }
+      }
+
+      function setStatus(msg: string, ok: boolean) {
+        statusEl.textContent = msg;
+        statusEl.classList.remove('hidden');
+        statusEl.classList.toggle('text-[#e31937]', !ok);
+        statusEl.classList.toggle('text-green-600', ok);
+      }
+
+      // Adapt the ID number field's hint/keyboard to the selected carrier ID type.
+      const idTypeSelect = form.querySelector('select[name="idType"]') as HTMLSelectElement | null;
+      const idNumberInput = form.querySelector('[data-id-number]') as HTMLInputElement | null;
+      if (idTypeSelect && idNumberInput) {
+        const hints: Record<string, { placeholder: string; inputmode: string; maxLength: number }> = {
+          mc: { placeholder: '6 digits — e.g. 123456', inputmode: 'numeric', maxLength: 6 },
+          dot: { placeholder: '9 digits — e.g. 123456789', inputmode: 'numeric', maxLength: 9 },
+          other: { placeholder: 'Enter your carrier ID', inputmode: 'text', maxLength: 50 },
+        };
+        idTypeSelect.addEventListener('change', () => {
+          const h = hints[idTypeSelect.value];
+          if (h) {
+            idNumberInput.placeholder = h.placeholder;
+            idNumberInput.setAttribute('inputmode', h.inputmode);
+            idNumberInput.maxLength = h.maxLength;
+          } else {
+            idNumberInput.placeholder = 'Select a type first';
+            idNumberInput.removeAttribute('inputmode');
+            idNumberInput.removeAttribute('maxlength');
+          }
+        });
+      }
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        clearErrors();
+        statusEl.classList.add('hidden');
+
+        const data = Object.fromEntries(new FormData(form).entries()) as Record<string, string>;
+
+        // Client-side validation (server re-validates). Contact number is optional.
+        const errors: Record<string, string> = {};
+        const req: Array<[string, string]> = [
+          ['firstName', 'First name is required.'],
+          ['lastName', 'Last name is required.'],
+          ['address', 'Address is required.'],
+          ['email', 'Email is required.'],
+          ['driverLicense', "Driver's license # is required."],
+          ['idType', 'Select an ID type.'],
+          ['idNumber', 'ID number is required.'],
+        ];
+        req.forEach(([k, msg]) => { if (!String(data[k] || '').trim()) errors[k] = msg; });
+        if (!errors.email && !EMAIL_RE.test(String(data.email))) errors.email = 'Enter a valid email address.';
+        const idType = String(data.idType || '');
+        const idNumber = String(data.idNumber || '');
+        if (!errors.idNumber && idType === 'mc' && !MC_RE.test(idNumber)) errors.idNumber = 'MC # must be exactly 6 digits.';
+        if (!errors.idNumber && idType === 'dot' && !DOT_RE.test(idNumber)) errors.idNumber = 'DOT # must be exactly 9 digits.';
+
+        if (Object.keys(errors).length) {
+          Object.entries(errors).forEach(([k, v]) => showFieldError(k, v));
+          return;
+        }
+
+        const original = button.textContent;
+        button.disabled = true;
+        button.textContent = 'SUBMITTING…';
+
+        try {
+          const res = await fetch('/api/carrier', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+          });
+          const result = await res.json();
+          if (res.ok && result.ok) {
+            form.reset();
+            setStatus(result.message || 'Application submitted.', true);
+          } else {
+            if (result.fields) Object.entries(result.fields).forEach(([k, v]) => showFieldError(k, String(v)));
+            setStatus(result.error || 'Something went wrong. Please try again.', false);
+          }
+        } catch {
+          setStatus('Network error. Please check your connection and try again.', false);
+        } finally {
+          button.disabled = false;
+          button.textContent = original;
+        }
+      });
+    }
+  </script>
 
 </Layout>

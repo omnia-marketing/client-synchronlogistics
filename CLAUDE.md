@@ -32,11 +32,20 @@ All client-specific details live in `site.config.js`. **Do not hardcode business
 | Layer | Technology |
 |---|---|
 | Framework | Astro 4 |
+| Output mode | `hybrid` — pages prerendered static; only API routes run server-side |
+| Server adapter | `@astrojs/cloudflare` (Cloudflare Pages Functions) |
 | Styling | Tailwind CSS 3 |
 | Deployment | Cloudflare Pages |
-| Email (forms) | Resend |
+| Email (forms) | Resend (`resend` pkg) — contact + carrier forms wired |
 | CMS | None |
 | Database | None |
+
+> **Stack note (established pattern):** This was a fully static site until form
+> handling was needed. The reusable pattern for any client site that needs forms:
+> add `@astrojs/cloudflare`, set `output: 'hybrid'` in `astro.config.mjs`, and mark
+> each API route with `export const prerender = false`. Pages stay static; only the
+> endpoints become Cloudflare Pages Functions. See `CONVENTIONS.md → Server Endpoints
+> & Form Handling`.
 
 ---
 
@@ -46,8 +55,8 @@ Controlled via `modules` export in `site.config.js`:
 
 | Module | Status | Notes |
 |---|---|---|
-| `contactForm` | Active | UI built; Resend backend not yet wired |
-| `carriers` | Active | `/carriers` page built; apply link pending from client |
+| `contactForm` | Active | Wired to Resend via `/api/contact`; all → `info@`, differentiated by subject line |
+| `carriers` | Active | `/carriers` page built; carrier application form wired via `/api/carrier` |
 | `tracking` | Active | UI placeholder — portal URL pending from client |
 | `industries` | Active | Industries grid on `/services` page |
 | `blog` | Off | Not needed for this client |
@@ -64,9 +73,19 @@ Controlled via `modules` export in `site.config.js`:
 | `/` | `src/pages/index.astro` | Built — hero, Asia Pacific strip, origin/mission, services, stats, red CTA |
 | `/about` | `src/pages/about.astro` | Built — origin story, vision, mission, compliance, IATA/FMC accreditations |
 | `/services` | `src/pages/services.astro` | Built — alternating split layout, 4 groups, real images, industries grid |
-| `/contact` | `src/pages/contact.astro` | Built — form UI with inquiry type routing; Resend backend pending |
+| `/contact` | `src/pages/contact.astro` | Built — form wired to Resend (`/api/contact`), all → `info@` (subject-line differentiated), client+server validation, honeypot |
 | `/tracking` | `src/pages/tracking.astro` | Built — honest placeholder; portal URL pending from client |
-| `/carriers` | `src/pages/carriers.astro` | Built — full carrier partnership page; apply link pending from client |
+| `/carriers` | `src/pages/carriers.astro` | Built — full partnership page + carrier application form wired to Resend (`/api/carrier`), honeypot |
+
+### API Routes (server-side, `prerender = false`)
+
+| Route | File | Purpose |
+|---|---|---|
+| `/api/contact` | `src/pages/api/contact.ts` | Contact form → Resend; routes by inquiry type; Reply-To = submitter |
+| `/api/carrier` | `src/pages/api/carrier.ts` | Carrier application → Resend → `info@`; Reply-To = applicant |
+
+Shared email plumbing (Resend client, env handling, validation, HTML body) lives in
+`src/lib/mail.ts` — build new form endpoints on top of it, do not duplicate.
 
 ---
 
@@ -79,11 +98,13 @@ Controlled via `modules` export in `site.config.js`:
 - Nav and Footer built, responsive, null-safe for missing phone/address
 - All business details in `site.config.js` — no hardcoded strings in components
 - Services page: full alternating split layout with 4 real client images
-- Contact form: UI complete with inquiry type dropdown; Resend backend not yet built
+- Contact form: wired to Resend (`/api/contact`) — server + client validation, success/error states, all → `info@` (differentiated by subject line), honeypot spam drop
+- Carrier application form: built on `/carriers`, wired to Resend (`/api/carrier`) — single Carrier ID (type MC/DOT/Other + number; format adapts: MC=6 digits, DOT=9 digits, Other=free text) client + server; email required, contact number optional; collects applicant email for Reply-To; honeypot spam drop
+- Stack moved from fully static → `hybrid` (Cloudflare adapter) so API routes run server-side; pages remain static
 - Hero: "SUPPLY CHAIN EXCELLENCE." headline, background video (`synchron-logistics-hero-loop.mp4`) with jpg poster/fallback image, gated playback (desktop + motion-allowed only), headline text-shadow for legibility, CTA "EXPLORE SERVICES"
 - Gateway section: 3-column layout (headline left, two stats right); mobile-friendly side-by-side stats, left-aligned stack
 - Homepage services cards: still using Unsplash placeholder images — client assets needed
-- Missing from client: phone, street address, postal code, social URLs, carrier apply link, tracking portal URL
+- Missing from client: phone, street address, postal code, social URLs, tracking portal URL
 
 ---
 
@@ -115,7 +136,12 @@ Controlled via `modules` export in `site.config.js`:
 
 | File | Purpose |
 |---|---|
-| `site.config.js` | Client config — business details and module toggles |
+| `site.config.js` | Client config — business details, email routing, `mail.from`/`mail.to`, module toggles |
+| `astro.config.mjs` | `hybrid` output + Cloudflare adapter |
+| `src/lib/mail.ts` | Shared email plumbing (Resend client, env, validation, HTML body) — used by all form endpoints |
+| `src/pages/api/contact.ts` | Contact form endpoint |
+| `src/pages/api/carrier.ts` | Carrier application endpoint |
+| `.env` / `.env.example` | `RESEND_API_KEY` (dev); `.env` gitignored, `.env.example` committed |
 | `tailwind.config.mjs` | Design tokens — colors and fonts |
 | `src/layouts/Layout.astro` | Base HTML shell, global styles, global scripts |
 | `src/components/Nav.astro` | Site navigation |
@@ -126,13 +152,42 @@ Controlled via `modules` export in `site.config.js`:
 
 ---
 
-## Resend Integration (Pending)
+## Resend Integration (Implemented)
 
-The contact form at `/contact` needs to be wired to Resend for email delivery.
+Both the contact form (`/contact`) and the carrier application form (`/carriers`)
+are wired to Resend for email delivery.
 
-**Approach when ready:**
-- Add `resend` npm package
-- Create an Astro API endpoint at `src/pages/api/contact.ts`
-- The endpoint receives form POST, validates fields, sends via Resend
-- Add Resend API key to Cloudflare Pages environment variables
-- Handle success/error states in the form UI
+**Configuration (all in `site.config.js`, never hardcoded):**
+- `mail.from` — `noreply@synchronlogistics.com` (domain verified in Resend)
+- `mail.to` — `info@synchronlogistics.com` (single destination for ALL submissions)
+
+**API key:** `RESEND_API_KEY`. In production it is read from `locals.runtime.env`
+(Cloudflare Pages env vars, set for Production + Preview); in dev it is read from
+`.env` via `import.meta.env`. The key is never hardcoded. See `src/lib/mail.ts → getResend()`.
+
+**Routing (single destination):** every submission — contact AND carrier, regardless
+of inquiry type — goes to `mail.to` (`info@`). Reply-To = the submitter's email on both
+forms. The inquiry type is still shown in the email body. Triage happens via the subject
+line, not the recipient:
+- Contact, General → `New Contact Inquiry (General) — [First Last]`
+- Contact, Sales & Quotes → `New Quote Request (Sales) — [First Last]`
+- Contact, Carrier Inquiries → `New Carrier Inquiry — [First Last]`
+- Carrier application → `New Carrier Application — [First Last]`
+
+> The `emails.{general,sales,accounting}` map in `site.config.js` is no longer used for
+> contact routing (kept for other references like the carriers payment section). Subject
+> lines, not recipients, differentiate submissions.
+
+**Validation:** every field is validated on BOTH client (inline errors) and server
+(`/api/*` returns `{ ok, error, fields }`). The carrier form collects a single Carrier
+ID — the applicant picks a type (MC / DOT / Other) and enters one number; the format
+check adapts to the type (MC = 6 digits, DOT = 9 digits, Other = free text). On the
+carrier form email is required and contact number is optional.
+
+**Spam protection (honeypot):** both forms render a hidden `company_website` field
+(see `HONEYPOT_FIELD` in `src/lib/mail.ts`). If it arrives non-empty, the endpoint
+silently returns a success response WITHOUT sending — the bot thinks it worked and
+doesn't retry. It is never treated as a validation error.
+
+**To add another form:** create `src/pages/api/<name>.ts` with `export const prerender = false`,
+import the shared helpers from `src/lib/mail.ts`, and POST to it from the page via `fetch`.

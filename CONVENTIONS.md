@@ -215,6 +215,100 @@ Trigger is scoped to `#stats-section`. Managed in `Layout.astro`.
 
 ---
 
+## Server Endpoints & Form Handling
+
+**Established template pattern** for any client site that needs form handling
+(contact, carrier, quote, etc.). Introduced when the Synchron contact + carrier
+forms were wired to Resend.
+
+### Stack setup (one-time per project)
+
+The site stays static except for API routes:
+
+1. Install `@astrojs/cloudflare` and `resend`.
+2. In `astro.config.mjs`: set `output: 'hybrid'` and `adapter: cloudflare()`.
+   - `hybrid` = every page prerenders to static HTML by default; only routes that
+     opt out run server-side. Pages stay fast and CDN-cached.
+3. Mark each API route with `export const prerender = false` so it runs as a
+   Cloudflare Pages Function.
+
+### Email plumbing — build it once
+
+Shared helpers live in `src/lib/mail.ts`. **Do not re-create the Resend client,
+env handling, validation, or response shape in each endpoint** — import from there.
+
+- `getResend(locals)` — returns a Resend client. Reads the key from
+  `locals.runtime.env.RESEND_API_KEY` in production (Cloudflare), falling back to
+  `import.meta.env.RESEND_API_KEY` (`.env`) in dev. **Never hardcode the key.**
+- `json(data, status)` — JSON `Response` helper.
+- `EMAIL_RE` — shared email regex (mirror it on the client).
+- `escapeHtml(value)` — escape user input before interpolating into the HTML body.
+- `renderEmail(title, rows)` — render a labeled field list into a clean HTML body.
+- `HONEYPOT_FIELD` / `isHoneypotTripped(data)` — shared spam check (see Honeypot below).
+
+Envelope addresses (`mail.from`, `mail.to`) and routing addresses (`emails.*`) come
+from `site.config.js` — never hardcode them in endpoints.
+
+### Endpoint contract
+
+Each endpoint accepts a JSON POST and returns:
+
+```json
+{ "ok": true,  "message": "Human-readable success" }
+{ "ok": false, "error": "Summary", "fields": { "fieldName": "Inline message" } }
+```
+
+- Validate EVERY field server-side. Never trust client validation.
+- Return `400` with a `fields` map for validation errors, `502` for send failures,
+  `500` if the service is misconfigured (missing key).
+- **Check the honeypot FIRST**, before validation or sending (see below).
+
+### Honeypot (spam protection — include on every form by default)
+
+Bots auto-fill every field they find. A honeypot is a decoy field hidden from humans;
+if it comes back filled, the submission is almost certainly a bot.
+
+- **Markup:** a real text input (NOT `type="hidden"` — bots skip those), visually
+  hidden via CSS, wrapped in an `aria-hidden="true"` container, with `tabindex="-1"`
+  and `autocomplete="off"` so humans never focus or autofill it. Hide it by moving it
+  offscreen (`absolute -left-[9999px] w-px h-px overflow-hidden`), not `display:none`
+  (some bots skip non-rendered fields). Use the shared `HONEYPOT_FIELD` name.
+
+  ```html
+  <div class="absolute -left-[9999px] w-px h-px overflow-hidden" aria-hidden="true">
+    <label>Company Website</label>
+    <input type="text" name="company_website" tabindex="-1" autocomplete="off" />
+  </div>
+  ```
+
+- **Server:** call `isHoneypotTripped(data)` as the very first step. If true, silently
+  return a normal success response WITHOUT sending email — the bot believes it
+  succeeded and won't retry. Never surface it as a validation error.
+- **Client:** nothing special — the field rides along in `FormData` automatically and
+  is not part of client validation.
+
+### Triage by subject line, not recipient
+
+Forms send all submissions to one inbox (`mail.to`). Differentiate submission types
+with distinct, name-bearing **subject lines** (e.g. `New Quote Request (Sales) — Jane Doe`)
+so the inbox can be triaged without opening each email. Keep any "type" field visible in
+the body too. Prefer this over routing to multiple recipients.
+
+### Form UI pattern
+
+- `<form novalidate>` with an `id`; handle submit via `fetch` (no page reload).
+- Each validated field gets a sibling `<p class="hidden ..." data-error-for="name">`
+  for inline errors; a single `<p data-form-status role="status" aria-live="polite">`
+  for the overall result.
+- On submit: clear errors → client-validate → disable the submit button and swap its
+  label (`SENDING…`) → POST → on `ok` reset the form and show success; otherwise map
+  `result.fields` back to the inline error elements and show `result.error`.
+- Mirror server validation rules on the client (e.g. MC = 6 digits, DOT = 9 digits),
+  and also use HTML `pattern` + `inputmode="numeric"` for native hints.
+- Form inputs follow the standard input styling (sharp, no radius, red focus border).
+
+---
+
 ## File Structure Conventions
 
 ```

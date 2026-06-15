@@ -2,7 +2,7 @@
 import Layout from '../layouts/Layout.astro';
 import { site } from '../../site.config.js';
 
-const { phone, phoneHref, email, address, emails } = site;
+const { phone, phoneHref, email, address } = site;
 ---
 
 <Layout title={`Contact${site.seo.titleSuffix}`}>
@@ -86,15 +86,16 @@ const { phone, phoneHref, email, address, emails } = site;
         -->
         <div class="bg-white p-10">
           <h2 class="font-heading font-bold uppercase text-3xl text-[#0a0a0a] mb-8">GET A QUOTE</h2>
-          <!-- TODO: Wire to Resend API endpoint at src/pages/api/contact.ts -->
-          <form class="flex flex-col gap-5">
+          <form id="contact-form" novalidate class="flex flex-col gap-5">
+            <!-- Honeypot: hidden from humans, baits bots. Submissions with this filled are silently dropped server-side. -->
+            <div class="absolute -left-[9999px] w-px h-px overflow-hidden" aria-hidden="true">
+              <label>Company Website</label>
+              <input type="text" name="company_website" tabindex="-1" autocomplete="off" />
+            </div>
             <div>
               <label class="font-body text-xs uppercase tracking-widest text-gray-500 mb-2 block">Inquiry Type</label>
               <select
                 name="inquiryType"
-                data-email-general={emails.general}
-                data-email-sales={emails.sales}
-                data-email-accounting={emails.accounting}
                 class="w-full border border-gray-200 px-4 py-3 font-body text-sm focus:outline-none focus:border-[#e31937] transition-colors bg-white text-gray-700"
               >
                 <option value="general">General Inquiry</option>
@@ -105,16 +106,19 @@ const { phone, phoneHref, email, address, emails } = site;
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div>
                 <label class="font-body text-xs uppercase tracking-widest text-gray-500 mb-2 block">First Name</label>
-                <input type="text" name="firstName" class="w-full border border-gray-200 px-4 py-3 font-body text-sm focus:outline-none focus:border-[#e31937] transition-colors" placeholder="John" />
+                <input type="text" name="firstName" required class="w-full border border-gray-200 px-4 py-3 font-body text-sm focus:outline-none focus:border-[#e31937] transition-colors" placeholder="John" />
+                <p class="hidden font-body text-xs text-[#e31937] mt-1" data-error-for="firstName"></p>
               </div>
               <div>
                 <label class="font-body text-xs uppercase tracking-widest text-gray-500 mb-2 block">Last Name</label>
-                <input type="text" name="lastName" class="w-full border border-gray-200 px-4 py-3 font-body text-sm focus:outline-none focus:border-[#e31937] transition-colors" placeholder="Smith" />
+                <input type="text" name="lastName" required class="w-full border border-gray-200 px-4 py-3 font-body text-sm focus:outline-none focus:border-[#e31937] transition-colors" placeholder="Smith" />
+                <p class="hidden font-body text-xs text-[#e31937] mt-1" data-error-for="lastName"></p>
               </div>
             </div>
             <div>
               <label class="font-body text-xs uppercase tracking-widest text-gray-500 mb-2 block">Email</label>
-              <input type="email" name="email" class="w-full border border-gray-200 px-4 py-3 font-body text-sm focus:outline-none focus:border-[#e31937] transition-colors" placeholder="john@company.com" />
+              <input type="email" name="email" required class="w-full border border-gray-200 px-4 py-3 font-body text-sm focus:outline-none focus:border-[#e31937] transition-colors" placeholder="john@company.com" />
+              <p class="hidden font-body text-xs text-[#e31937] mt-1" data-error-for="email"></p>
             </div>
             <div>
               <label class="font-body text-xs uppercase tracking-widest text-gray-500 mb-2 block">Company</label>
@@ -138,15 +142,89 @@ const { phone, phoneHref, email, address, emails } = site;
             </div>
             <div>
               <label class="font-body text-xs uppercase tracking-widest text-gray-500 mb-2 block">Message</label>
-              <textarea name="message" rows="4" class="w-full border border-gray-200 px-4 py-3 font-body text-sm focus:outline-none focus:border-[#e31937] transition-colors resize-none" placeholder="Tell us about your logistics needs..."></textarea>
+              <textarea name="message" rows="4" required class="w-full border border-gray-200 px-4 py-3 font-body text-sm focus:outline-none focus:border-[#e31937] transition-colors resize-none" placeholder="Tell us about your logistics needs..."></textarea>
+              <p class="hidden font-body text-xs text-[#e31937] mt-1" data-error-for="message"></p>
             </div>
-            <button type="submit" class="bg-[#e31937] text-white font-heading font-bold uppercase tracking-widest text-sm px-8 py-4 hover:bg-[#c41530] transition-colors self-start">
+            <button type="submit" data-submit class="bg-[#e31937] text-white font-heading font-bold uppercase tracking-widest text-sm px-8 py-4 hover:bg-[#c41530] transition-colors self-start disabled:opacity-60 disabled:cursor-not-allowed">
               SEND MESSAGE
             </button>
+            <p class="hidden font-body text-sm" data-form-status role="status" aria-live="polite"></p>
           </form>
         </div>
 
       </div>
     </div>
   </section>
+
+  <script>
+    const form = document.getElementById('contact-form') as HTMLFormElement | null;
+    if (form) {
+      const statusEl = form.querySelector('[data-form-status]') as HTMLElement;
+      const button = form.querySelector('[data-submit]') as HTMLButtonElement;
+      const errorEls = form.querySelectorAll<HTMLElement>('[data-error-for]');
+      const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+      function clearErrors() {
+        errorEls.forEach((el) => { el.textContent = ''; el.classList.add('hidden'); });
+      }
+
+      function showFieldError(name: string, msg: string) {
+        const el = form!.querySelector<HTMLElement>(`[data-error-for="${name}"]`);
+        if (el) { el.textContent = msg; el.classList.remove('hidden'); }
+      }
+
+      function setStatus(msg: string, ok: boolean) {
+        statusEl.textContent = msg;
+        statusEl.classList.remove('hidden');
+        statusEl.classList.toggle('text-[#e31937]', !ok);
+        statusEl.classList.toggle('text-green-600', ok);
+      }
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        clearErrors();
+        statusEl.classList.add('hidden');
+
+        const data = Object.fromEntries(new FormData(form).entries());
+
+        // Client-side validation (server re-validates).
+        const errors: Record<string, string> = {};
+        if (!String(data.firstName || '').trim()) errors.firstName = 'First name is required.';
+        if (!String(data.lastName || '').trim()) errors.lastName = 'Last name is required.';
+        if (!String(data.email || '').trim()) errors.email = 'Email is required.';
+        else if (!EMAIL_RE.test(String(data.email))) errors.email = 'Enter a valid email address.';
+        if (!String(data.message || '').trim()) errors.message = 'Message is required.';
+
+        if (Object.keys(errors).length) {
+          Object.entries(errors).forEach(([k, v]) => showFieldError(k, v));
+          return;
+        }
+
+        const original = button.textContent;
+        button.disabled = true;
+        button.textContent = 'SENDING…';
+
+        try {
+          const res = await fetch('/api/contact', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+          });
+          const result = await res.json();
+          if (res.ok && result.ok) {
+            form.reset();
+            setStatus(result.message || 'Message sent.', true);
+          } else {
+            if (result.fields) Object.entries(result.fields).forEach(([k, v]) => showFieldError(k, String(v)));
+            setStatus(result.error || 'Something went wrong. Please try again.', false);
+          }
+        } catch {
+          setStatus('Network error. Please check your connection and try again.', false);
+        } finally {
+          button.disabled = false;
+          button.textContent = original;
+        }
+      });
+    }
+  </script>
 </Layout>

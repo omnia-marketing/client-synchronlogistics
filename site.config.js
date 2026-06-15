@@ -47,6 +47,17 @@ export const site = {
     accounting: 'accounting@synchronlogistics.com',
   },
 
+  // ─── Transactional Mail (Resend) ──────────────────────────────────────────
+  // Envelope addresses for form submissions sent via Resend. The API key is
+  // read from the RESEND_API_KEY environment variable — NEVER hardcoded.
+  // `from` must be on a domain verified in Resend. `to` is the default
+  // recipient (carrier applications + fallback); the contact form additionally
+  // routes by inquiry type using the `emails` map above.
+  mail: {
+    from: 'noreply@synchronlogistics.com',
+    to:   'info@synchronlogistics.com',
+  },
+
   // ─── Social Media ─────────────────────────────────────────────────────────
   // TODO: Replace '#' with real URLs before launch — all MISSING
   social: {
@@ -69,7 +80,13 @@ export const site = {
     links: [
       { label: 'HOME',      href: '/' },
       { label: 'SERVICES',  href: '/services' },
-      { label: 'CARRIERS',  href: '/carriers' },
+      {
+        label: 'CARRIERS',
+        href: '/carriers',
+        children: [
+          { label: 'Carrier Application', href: '/carriers#carrier-application' },
+        ],
+      },
       { label: 'ABOUT US',  href: '/about' },
       { label: 'TRACKING',  href: '/tracking' },
       { label: 'CONTACT',   href: '/contact' },

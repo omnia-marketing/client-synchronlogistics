@@ -433,12 +433,11 @@ import { site } from '../../site.config.js';
 </style>
 
 <script>
-  // Hero background video — only play on desktop when motion is allowed
+  // Hero background video — play on all screen sizes when motion is allowed
   const v = document.querySelector('.hero-video');
   if (v) {
-    const reduce  = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const desktop = matchMedia('(min-width: 768px)').matches;
-    if (!reduce && desktop) {
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!reduce) {
       v.preload = 'auto';
       v.addEventListener('canplay', () => v.classList.add('is-ready'), { once: true });
       v.play().catch(() => {});

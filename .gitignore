@@ -17,3 +17,4 @@ dist/
 
 # Cloudflare
 .wrangler/
+.DS_Store

@@ -30,9 +30,16 @@ export const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /**
  * Name of the hidden honeypot field. Both forms render an input with this name,
- * visually hidden from humans. Legitimate users never fill it; many bots do.
+ * hidden from humans via `display:none`. Legitimate users never fill it; many
+ * bots do.
+ *
+ * NOTE: the field is named `contact_ref` (not something like `company_website`)
+ * and hidden with `display:none` on purpose. A field named after a real autofill
+ * token (website / company / url) and merely positioned off-screen gets filled by
+ * browser autofill and password managers — silently dropping REAL submissions.
+ * `display:none` is skipped by autofill; a neutral name isn't recognized by it.
  */
-export const HONEYPOT_FIELD = 'company_website';
+export const HONEYPOT_FIELD = 'contact_ref';
 
 /**
  * Returns true if the honeypot was tripped (non-empty) — i.e. the submission is

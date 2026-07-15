@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { site } from '../../../site.config.js';
-import { getResend, json, EMAIL_RE, renderEmail, isHoneypotTripped } from '../../lib/mail';
+import { getResend, json, EMAIL_RE, renderEmail, isHoneypotTripped, HONEYPOT_FIELD } from '../../lib/mail';
 
 // Run server-side as a Cloudflare Pages Function (hybrid output).
 export const prerender = false;
@@ -33,7 +33,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
   }
 
   // Honeypot: silently accept (no email) so bots think it worked and don't retry.
+  // Log the trip so drops are visible in Cloudflare tail logs — a real user's
+  // browser autofilling this field would otherwise vanish without a trace.
   if (isHoneypotTripped(data)) {
+    console.warn(`Honeypot tripped (contact) — dropped without sending. ${HONEYPOT_FIELD}=`, data[HONEYPOT_FIELD]);
     return json({ ok: true, message: "Thanks — we'll be in touch shortly." });
   }
 

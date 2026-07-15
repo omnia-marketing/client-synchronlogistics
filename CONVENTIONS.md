@@ -268,22 +268,34 @@ Each endpoint accepts a JSON POST and returns:
 Bots auto-fill every field they find. A honeypot is a decoy field hidden from humans;
 if it comes back filled, the submission is almost certainly a bot.
 
-- **Markup:** a real text input (NOT `type="hidden"` — bots skip those), visually
-  hidden via CSS, wrapped in an `aria-hidden="true"` container, with `tabindex="-1"`
-  and `autocomplete="off"` so humans never focus or autofill it. Hide it by moving it
-  offscreen (`absolute -left-[9999px] w-px h-px overflow-hidden`), not `display:none`
-  (some bots skip non-rendered fields). Use the shared `HONEYPOT_FIELD` name.
+- **Markup:** a real text input (NOT `type="hidden"` — bots skip those), hidden via
+  `display:none` (Tailwind `hidden`), wrapped in an `aria-hidden="true"` container, with
+  `tabindex="-1"` and `autocomplete="off"`. Use the shared `HONEYPOT_FIELD` name — keep
+  it **neutral** (`contact_ref`), never a real autofill token like `company_website` /
+  `url` / `organization`. Do **not** give it a visible `<label>`.
 
   ```html
-  <div class="absolute -left-[9999px] w-px h-px overflow-hidden" aria-hidden="true">
-    <label>Company Website</label>
-    <input type="text" name="company_website" tabindex="-1" autocomplete="off" />
+  <div class="hidden" aria-hidden="true">
+    <input type="text" name="contact_ref" tabindex="-1" autocomplete="off" />
   </div>
   ```
 
-- **Server:** call `isHoneypotTripped(data)` as the very first step. If true, silently
-  return a normal success response WITHOUT sending email — the bot believes it
-  succeeded and won't retry. Never surface it as a validation error.
+  > **Why `display:none` and a neutral name (learned the hard way).** An earlier version
+  > of this pattern hid the field off-screen (`absolute -left-[9999px]`) and named it
+  > `company_website`. Browser autofill and password managers **skip `display:none` but
+  > DO fill off-screen fields**, and a field named `company_website` is exactly what a
+  > URL/organization autofill heuristic targets. Real visitors were silently dropped
+  > (endpoint returned success, no email, no Resend log) — the client lost live leads.
+  > `display:none` + a neutral name closes both holes; bots that blindly fill every input
+  > still trip it. `autocomplete="off"` alone is **not** enough — Chrome and most password
+  > managers ignore it.
+
+- **Server:** call `isHoneypotTripped(data)` as the very first step. If true, **log the
+  trip** (`console.warn` with the field value) so drops are visible in Cloudflare tail
+  logs, then silently return a normal success response WITHOUT sending email — the bot
+  believes it succeeded and won't retry. Never surface it as a validation error. The log
+  line is essential: without it, a false-positive drop of a real user is completely
+  invisible.
 - **Client:** nothing special — the field rides along in `FormData` automatically and
   is not part of client validation.
 

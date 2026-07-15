@@ -200,10 +200,9 @@ const { emails } = site;
 
       <div class="bg-white p-8 md:p-10">
         <form id="carrier-form" novalidate class="flex flex-col gap-5">
-          <!-- Honeypot: hidden from humans, baits bots. Submissions with this filled are silently dropped server-side. -->
-          <div class="absolute -left-[9999px] w-px h-px overflow-hidden" aria-hidden="true">
-            <label>Company Website</label>
-            <input type="text" name="company_website" tabindex="-1" autocomplete="off" />
+          <!-- Honeypot: display:none (skipped by browser autofill, unlike off-screen), neutral field name. Bots that fill all inputs trip it; real users never do. Submissions with this filled are silently dropped server-side. -->
+          <div class="hidden" aria-hidden="true">
+            <input type="text" name="contact_ref" tabindex="-1" autocomplete="off" />
           </div>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <div>

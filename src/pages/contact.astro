@@ -86,7 +86,8 @@ const { phone, phoneHref, email, address } = site;
         -->
         <div class="bg-white p-10">
           <h2 class="font-heading font-bold uppercase text-3xl text-[#0a0a0a] mb-8">GET A QUOTE</h2>
-          <form id="contact-form" novalidate class="flex flex-col gap-5">
+          <!-- method/action = no-JS fallback: if the script never runs, the browser posts natively and the endpoint replies with an HTML page instead of the page silently reloading. The script sets noValidate and submits via fetch. -->
+          <form id="contact-form" method="post" action="/api/contact" class="flex flex-col gap-5">
             <!-- Honeypot: display:none (skipped by browser autofill, unlike off-screen), neutral field name. Bots that fill all inputs trip it; real users never do. Submissions with this filled are silently dropped server-side. -->
             <div class="hidden" aria-hidden="true">
               <input type="text" name="contact_ref" tabindex="-1" autocomplete="off" />
@@ -158,6 +159,8 @@ const { phone, phoneHref, email, address } = site;
   <script>
     const form = document.getElementById('contact-form') as HTMLFormElement | null;
     if (form) {
+      // Native validation only matters on the no-JS fallback; with JS we show inline errors.
+      form.noValidate = true;
       const statusEl = form.querySelector('[data-form-status]') as HTMLElement;
       const button = form.querySelector('[data-submit]') as HTMLButtonElement;
       const errorEls = form.querySelectorAll<HTMLElement>('[data-error-for]');

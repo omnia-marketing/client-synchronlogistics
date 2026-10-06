@@ -199,7 +199,8 @@ const { emails } = site;
       </div>
 
       <div class="bg-white p-8 md:p-10">
-        <form id="carrier-form" novalidate class="flex flex-col gap-5">
+        <!-- method/action = no-JS fallback: if the script never runs, the browser posts natively and the endpoint replies with an HTML page instead of the page silently reloading. The script sets noValidate and submits via fetch. -->
+        <form id="carrier-form" method="post" action="/api/carrier" class="flex flex-col gap-5">
           <!-- Honeypot: display:none (skipped by browser autofill, unlike off-screen), neutral field name. Bots that fill all inputs trip it; real users never do. Submissions with this filled are silently dropped server-side. -->
           <div class="hidden" aria-hidden="true">
             <input type="text" name="contact_ref" tabindex="-1" autocomplete="off" />
@@ -280,12 +281,16 @@ const { emails } = site;
   <script>
     const form = document.getElementById('carrier-form') as HTMLFormElement | null;
     if (form) {
+      // Native validation only matters on the no-JS fallback; with JS we show inline errors.
+      form.noValidate = true;
       const statusEl = form.querySelector('[data-form-status]') as HTMLElement;
       const button = form.querySelector('[data-submit]') as HTMLButtonElement;
       const errorEls = form.querySelectorAll<HTMLElement>('[data-error-for]');
       const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      const MC_RE = /^\d{6}$/;
-      const DOT_RE = /^\d{9}$/;
+      // Mirrors /api/carrier: MC/DOT are digits only, 1–8 (length grows over time),
+      // with a typed "MC-" / "USDOT #" prefix and separators stripped.
+      const CARRIER_NUM_RE = /^\d{1,8}$/;
+      const normalizeCarrierNumber = (v: string) => v.replace(/^(us\s*)?(mc|dot)/i, '').replace(/[\s#:.-]/g, '');
 
       function clearErrors() {
         errorEls.forEach((el) => { el.textContent = ''; el.classList.add('hidden'); });
@@ -308,8 +313,8 @@ const { emails } = site;
       const idNumberInput = form.querySelector('[data-id-number]') as HTMLInputElement | null;
       if (idTypeSelect && idNumberInput) {
         const hints: Record<string, { placeholder: string; inputmode: string; maxLength: number }> = {
-          mc: { placeholder: '6 digits — e.g. 123456', inputmode: 'numeric', maxLength: 6 },
-          dot: { placeholder: '9 digits — e.g. 123456789', inputmode: 'numeric', maxLength: 9 },
+          mc: { placeholder: 'e.g. 123456', inputmode: 'numeric', maxLength: 20 },
+          dot: { placeholder: 'e.g. 1234567', inputmode: 'numeric', maxLength: 20 },
           other: { placeholder: 'Enter your carrier ID', inputmode: 'text', maxLength: 50 },
         };
         idTypeSelect.addEventListener('change', () => {
@@ -347,9 +352,9 @@ const { emails } = site;
         req.forEach(([k, msg]) => { if (!String(data[k] || '').trim()) errors[k] = msg; });
         if (!errors.email && !EMAIL_RE.test(String(data.email))) errors.email = 'Enter a valid email address.';
         const idType = String(data.idType || '');
-        const idNumber = String(data.idNumber || '');
-        if (!errors.idNumber && idType === 'mc' && !MC_RE.test(idNumber)) errors.idNumber = 'MC # must be exactly 6 digits.';
-        if (!errors.idNumber && idType === 'dot' && !DOT_RE.test(idNumber)) errors.idNumber = 'DOT # must be exactly 9 digits.';
+        const idNumber = normalizeCarrierNumber(String(data.idNumber || '').trim());
+        if (!errors.idNumber && (idType === 'mc' || idType === 'dot') && !CARRIER_NUM_RE.test(idNumber))
+          errors.idNumber = `${idType.toUpperCase()} # must be digits only (up to 8).`;
 
         if (Object.keys(errors).length) {
           Object.entries(errors).forEach(([k, v]) => showFieldError(k, v));

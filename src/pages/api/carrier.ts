@@ -89,6 +89,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const { error } = await resend.emails.send({
       from: site.mail.from,
       to: site.mail.to,
+      ...(site.mail.bcc ? { bcc: site.mail.bcc } : {}),
       replyTo: email,
       subject: `New Carrier Application — ${firstName} ${lastName}`,
       text,

@@ -160,6 +160,7 @@ are wired to Resend for email delivery.
 **Configuration (all in `site.config.js`, never hardcoded):**
 - `mail.from` — `noreply@synchronlogistics.com` (domain verified in Resend)
 - `mail.to` — `info@synchronlogistics.com` (single destination for ALL submissions)
+- `mail.bcc` — `patrick@omniamarketing.ca` (blind copy of every submission, for agency delivery monitoring; `null` = off)
 
 **API key:** `RESEND_API_KEY`. In production it is read from `locals.runtime.env`
 (Cloudflare Pages env vars, set for Production + Preview); in dev it is read from

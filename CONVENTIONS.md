@@ -249,7 +249,7 @@ env handling, validation, or response shape in each endpoint** — import from t
 - `respond(isJson, result, status, backTo)` — JSON for `fetch`, a minimal HTML page for a
   native form post (see No-JS fallback below).
 
-Envelope addresses (`mail.from`, `mail.to`) and routing addresses (`emails.*`) come
+Envelope addresses (`mail.from`, `mail.to`, optional `mail.bcc` for agency delivery monitoring) and routing addresses (`emails.*`) come
 from `site.config.js` — never hardcode them in endpoints.
 
 ### Endpoint contract

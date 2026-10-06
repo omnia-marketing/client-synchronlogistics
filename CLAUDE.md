@@ -158,7 +158,7 @@ Both the contact form (`/contact`) and the carrier application form (`/carriers`
 are wired to Resend for email delivery.
 
 **Configuration (all in `site.config.js`, never hardcoded):**
-- `mail.from` — `noreply@synchronlogistics.com` (domain verified in Resend)
+- `mail.from` — `info@synchronlogistics.com` (domain verified in Resend)
 - `mail.to` — `info@synchronlogistics.com` (single destination for ALL submissions)
 - `mail.bcc` — `patrick@omniamarketing.ca` (blind copy of every submission, for agency delivery monitoring; `null` = off)
 

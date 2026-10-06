@@ -56,7 +56,7 @@ export const site = {
   // `bcc` (optional) gets a blind copy of every form submission — used by the
   // agency to monitor delivery. Set to null to turn it off.
   mail: {
-    from: 'noreply@synchronlogistics.com',
+    from: 'info@synchronlogistics.com',
     to:   'info@synchronlogistics.com',
     bcc:  'patrick@omniamarketing.ca',
   },

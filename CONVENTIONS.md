@@ -245,13 +245,16 @@ env handling, validation, or response shape in each endpoint** — import from t
 - `escapeHtml(value)` — escape user input before interpolating into the HTML body.
 - `renderEmail(title, rows)` — render a labeled field list into a clean HTML body.
 - `HONEYPOT_FIELD` / `isHoneypotTripped(data)` — shared spam check (see Honeypot below).
+- `readSubmission(request)` — parses JSON **or** a native form post; returns `{ data, isJson }`.
+- `respond(isJson, result, status, backTo)` — JSON for `fetch`, a minimal HTML page for a
+  native form post (see No-JS fallback below).
 
-Envelope addresses (`mail.from`, `mail.to`) and routing addresses (`emails.*`) come
+Envelope addresses (`mail.from`, `mail.to`, optional `mail.bcc` for agency delivery monitoring) and routing addresses (`emails.*`) come
 from `site.config.js` — never hardcode them in endpoints.
 
 ### Endpoint contract
 
-Each endpoint accepts a JSON POST and returns:
+Each endpoint accepts a JSON POST (and a native form post — see No-JS fallback) and returns:
 
 ```json
 { "ok": true,  "message": "Human-readable success" }
@@ -262,6 +265,18 @@ Each endpoint accepts a JSON POST and returns:
 - Return `400` with a `fields` map for validation errors, `502` for send failures,
   `500` if the service is misconfigured (missing key).
 - **Check the honeypot FIRST**, before validation or sending (see below).
+
+### No-JS fallback (include on every form)
+
+Give every `<form>` a `method="post"` and `action="/api/<name>"`, and parse the body
+with `readSubmission()` / reply with `respond()`. If the page's script never runs
+(blocked, failed to load, or the visitor submitted before it loaded), the browser
+posts natively and the endpoint answers with a plain HTML result page.
+
+> **Why:** with no `action`, a form whose script didn't run just reloads the page —
+> fields cleared, nothing sent, no error. The lead is lost invisibly. Don't put
+> `novalidate` in the markup; the script sets `form.noValidate = true` so native
+> `required` validation still applies on the fallback path.
 
 ### Honeypot (spam protection — include on every form by default)
 
@@ -308,16 +323,40 @@ the body too. Prefer this over routing to multiple recipients.
 
 ### Form UI pattern
 
-- `<form novalidate>` with an `id`; handle submit via `fetch` (no page reload).
+- `<form id="…" method="post" action="/api/<name>">`; the script sets
+  `form.noValidate = true` and handles submit via `fetch` (no page reload).
 - Each validated field gets a sibling `<p class="hidden ..." data-error-for="name">`
   for inline errors; a single `<p data-form-status role="status" aria-live="polite">`
   for the overall result.
 - On submit: clear errors → client-validate → disable the submit button and swap its
   label (`SENDING…`) → POST → on `ok` reset the form and show success; otherwise map
   `result.fields` back to the inline error elements and show `result.error`.
-- Mirror server validation rules on the client (e.g. MC = 6 digits, DOT = 9 digits),
-  and also use HTML `pattern` + `inputmode="numeric"` for native hints.
+- Mirror server validation rules on the client, and use `inputmode="numeric"` for
+  native hints.
+- **Don't enforce an exact length on IDs that are issued sequentially** (MC, DOT, etc.) —
+  they grow over time. The carrier form originally required MC = 6 and DOT = 9 digits;
+  real DOT numbers are ~7 digits, so real carriers were rejected. Accept a digits-only
+  range (here 1–8) and strip typed prefixes/separators (`MC-`, `USDOT #`) before checking.
 - Form inputs follow the standard input styling (sharp, no radius, red focus border).
+
+---
+
+## Deployment & Domains (Cloudflare Pages)
+
+**Add BOTH the apex and `www` as Custom domains on the Pages project**
+(Workers & Pages → project → Custom domains). A DNS record alone is not enough.
+
+> **Why (learned the hard way):** Synchron launched with only `synchronlogistics.com`
+> added to the Pages project. The `www` CNAME existed in DNS, so Cloudflare proxied it,
+> but Pages didn't recognize the hostname and every `www` request returned **error
+> 522**, unnoticed until the client reported missing inquiries. Visitors arriving via `www` never reached the site or the form.
+
+Launch checklist — confirm all return 200:
+
+```
+curl -sS -o /dev/null -w "%{http_code}\n" https://<domain>/
+curl -sS -o /dev/null -w "%{http_code}\n" https://www.<domain>/
+```
 
 ---
 

@@ -99,7 +99,7 @@ Shared email plumbing (Resend client, env handling, validation, HTML body) lives
 - All business details in `site.config.js` — no hardcoded strings in components
 - Services page: full alternating split layout with 4 real client images
 - Contact form: wired to Resend (`/api/contact`) — server + client validation, success/error states, all → `info@` (differentiated by subject line), honeypot spam drop
-- Carrier application form: built on `/carriers`, wired to Resend (`/api/carrier`) — single Carrier ID (type MC/DOT/Other + number; format adapts: MC=6 digits, DOT=9 digits, Other=free text) client + server; email required, contact number optional; collects applicant email for Reply-To; honeypot spam drop
+- Carrier application form: built on `/carriers`, wired to Resend (`/api/carrier`) — single Carrier ID (type MC/DOT/Other + number; MC/DOT = 1–8 digits with typed prefix like `MC-` stripped, Other = free text) client + server; email required, contact number optional; collects applicant email for Reply-To; honeypot spam drop
 - Stack moved from fully static → `hybrid` (Cloudflare adapter) so API routes run server-side; pages remain static
 - Hero: "SUPPLY CHAIN EXCELLENCE." headline, background video (`synchron-logistics-hero-loop.mp4`) with jpg poster/fallback image, gated playback (desktop + motion-allowed only), headline text-shadow for legibility, CTA "EXPLORE SERVICES"
 - Gateway section: 3-column layout (headline left, two stats right); mobile-friendly side-by-side stats, left-aligned stack
@@ -158,8 +158,9 @@ Both the contact form (`/contact`) and the carrier application form (`/carriers`
 are wired to Resend for email delivery.
 
 **Configuration (all in `site.config.js`, never hardcoded):**
-- `mail.from` — `noreply@synchronlogistics.com` (domain verified in Resend)
+- `mail.from` — `info@synchronlogistics.com` (domain verified in Resend)
 - `mail.to` — `info@synchronlogistics.com` (single destination for ALL submissions)
+- `mail.bcc` — `patrick@omniamarketing.ca` (blind copy of every submission, for agency delivery monitoring; `null` = off)
 
 **API key:** `RESEND_API_KEY`. In production it is read from `locals.runtime.env`
 (Cloudflare Pages env vars, set for Production + Preview); in dev it is read from
@@ -181,10 +182,14 @@ line, not the recipient:
 **Validation:** every field is validated on BOTH client (inline errors) and server
 (`/api/*` returns `{ ok, error, fields }`). The carrier form collects a single Carrier
 ID — the applicant picks a type (MC / DOT / Other) and enters one number; the format
-check adapts to the type (MC = 6 digits, DOT = 9 digits, Other = free text). On the
+check adapts to the type (MC / DOT = 1–8 digits, typed `MC-`/`USDOT` prefix stripped;
+Other = free text). On the
 carrier form email is required and contact number is optional.
 
-**Spam protection (honeypot):** both forms render a hidden `company_website` field
+**No-JS fallback:** both forms have `method="post"` + `action="/api/*"`; endpoints accept
+JSON or native form posts (`readSubmission`) and reply with JSON or an HTML page (`respond`).
+
+**Spam protection (honeypot):** both forms render a hidden `contact_ref` field
 (see `HONEYPOT_FIELD` in `src/lib/mail.ts`). If it arrives non-empty, the endpoint
 silently returns a success response WITHOUT sending — the bot thinks it worked and
 doesn't retry. It is never treated as a validation error.

@@ -53,9 +53,12 @@ export const site = {
   // `from` must be on a domain verified in Resend. `to` is the default
   // recipient (carrier applications + fallback); the contact form additionally
   // routes by inquiry type using the `emails` map above.
+  // `bcc` (optional) gets a blind copy of every form submission — used by the
+  // agency to monitor delivery. Set to null to turn it off.
   mail: {
-    from: 'noreply@synchronlogistics.com',
+    from: 'info@synchronlogistics.com',
     to:   'info@synchronlogistics.com',
+    bcc:  'patrick@omniamarketing.ca',
   },
 
   // ─── Social Media ─────────────────────────────────────────────────────────
